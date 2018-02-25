@@ -6,3 +6,4 @@ exports.withdraw = require('./withdraw');
 exports.tipmebch = require('./tipmebch');
 exports.help = require('./help');
 exports.about = require('./about');
+exports.stats = require('./stats');

@@ -28,4 +28,6 @@ module.exports = async ({ ctx, redisClient, reply, username }) => {
       ctx.message.from.username
     } is. You can try sending your tip again`
   );
+
+  await redisClient.incrAsync('stats.intros.count');
 };

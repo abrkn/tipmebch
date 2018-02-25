@@ -1,5 +1,10 @@
 const { n } = require('../utils');
-const { fetchCoinmarketcap, formatBchWithUsd, transfer } = require('../apis');
+const {
+  fetchCoinmarketcap,
+  formatBchWithUsd,
+  transfer,
+  bchToUsd,
+} = require('../apis');
 const { BalanceWouldBecomeNegativeError } = require('../errors');
 
 module.exports = async ({
@@ -39,7 +44,7 @@ module.exports = async ({
 
   if (!toUserId) {
     await reply(
-      `I've never seen @${toUsername} before. Have them write /tipmebch to me or in a group and try again.`
+      `I've never seen @${toUsername} before. Have them write /tipmebch here.`
     );
     return;
   }
@@ -68,20 +73,31 @@ module.exports = async ({
     bchAmount = theirAmount;
   }
 
+  let actualAmount;
+
   try {
-    const actualAmount = await transfer(userId, toUserId, bchAmount, {
+    actualAmount = await transfer(userId, toUserId, bchAmount, {
       fetchRpc,
       lockBitcoind,
     });
-    const amountText = await formatBchWithUsd(actualAmount);
-
-    await reply(`You tipped ${amountText} to ${toUserRaw}!`);
   } catch (e) {
     if (e instanceof BalanceWouldBecomeNegativeError) {
       await ctx.replyWithSticker('CAADBAADrgADd0K8CJy9v19cUUIoAg');
       await ctx.reply(`Your balance would become negative...`);
+      return;
     } else {
       throw e;
     }
   }
+
+  const amountText = await formatBchWithUsd(actualAmount);
+  await reply(`You tipped ${amountText} to ${toUserRaw}!`);
+
+  const usdAmount = await bchToUsd(actualAmount);
+
+  await Promise.all([
+    redisClient.incrbyfloatAsync('stats.tipped.bch', actualAmount),
+    redisClient.incrbyfloatAsync('stats.tipped.usd', usdAmount),
+    redisClient.incrAsync('stats.tipped.count'),
+  ]);
 };

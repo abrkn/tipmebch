@@ -1,4 +1,9 @@
-const { formatBchWithUsd, parseBchOrUsdAmount, withdraw } = require('../apis');
+const {
+  formatBchWithUsd,
+  parseBchOrUsdAmount,
+  withdraw,
+  bchToUsd,
+} = require('../apis');
 const { BalanceWouldBecomeNegativeError } = require('../errors');
 
 module.exports = async ({
@@ -10,6 +15,7 @@ module.exports = async ({
   userId,
   fetchRpc,
   lockBitcoind,
+  redisClient,
   ctx,
 }) => {
   if (!isPm) {
@@ -33,13 +39,18 @@ module.exports = async ({
     return;
   }
 
+  let actualAmount;
+
   try {
-    const { amount: actualAmount, txid } = await withdraw(
-      userId,
-      address,
-      theirAmount,
-      { fetchRpc, lockBitcoind }
-    );
+    const result = await withdraw(userId, address, theirAmount, {
+      fetchRpc,
+      lockBitcoind,
+    });
+
+    const { txid } = result;
+
+    actualAmount = result.amount;
+
     const amountText = await formatBchWithUsd(actualAmount);
     const url = `https://explorer.bitcoin.com/bch/tx/${txid}`;
 
@@ -48,8 +59,17 @@ module.exports = async ({
     if (e instanceof BalanceWouldBecomeNegativeError) {
       await ctx.replyWithSticker('CAADBAADrgADd0K8CJy9v19cUUIoAg');
       await ctx.reply(`Your balance would become negative...`);
+      return;
     } else {
       throw e;
     }
   }
+
+  const usdAmount = await bchToUsd(actualAmount);
+
+  await Promise.all([
+    redisClient.incrbyfloatAsync('stats.withdrawn.bch', actualAmount),
+    redisClient.incrbyfloatAsync('stats.withdrawn.usd', usdAmount),
+    redisClient.incrAsync('stats.withdrawn.count'),
+  ]);
 };
