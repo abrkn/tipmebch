@@ -1,3 +1,4 @@
+tipmebch - Introduce yourself to the bot
 tipbch - Send tip. Example /tipbch $1.23 @abrkn or /tipbch 0.001 @abrkn for BCH
 balance - Show your balance
 deposit - Show your deposit address (PM)
