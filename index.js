@@ -68,6 +68,12 @@ each(commands, (handler, name) => {
 });
 
 bot.on('text', ctx => {
+  debug(
+    `Storing user mapping for ${ctx.message.from.id} <> ${
+      ctx.message.from.username
+    }`
+  );
+
   // TODO: Possible issue if a different username was previously attached to this user id
   Promise.all([
     redisClient.setAsync(
