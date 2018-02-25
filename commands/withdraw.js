@@ -16,7 +16,8 @@ module.exports = async ({
   }
 
   if (params.length !== 2) {
-    throw new Error('Invalid number of params');
+    await reply(`I don't understand that. /withdraw <address> <bch amount>`);
+    return;
   }
 
   const [address, amountRaw] = params;
