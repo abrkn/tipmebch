@@ -16,6 +16,7 @@ const {
   TELEGRAM_BOT_TOKEN,
   REDIS_URL = 'redis://localhost/10',
   NODE_ENV,
+  ADMIN_USER_ID,
 } = process.env;
 
 assert(REDIS_URL, 'REDIS_URL');
@@ -23,6 +24,8 @@ assert(BITCOIND_URL, 'BITCOIND_URL');
 assert(TELEGRAM_BOT_TOKEN, 'TELEGRAM_BOT_TOKEN');
 
 const redisClient = redis.createClient(REDIS_URL);
+
+const botUserId = TELEGRAM_BOT_TOKEN.split(/:/)[0];
 
 const { fetchRpc, lockBitcoind } = createBitcoinRpc({
   bitcoindUrl: BITCOIND_URL,
@@ -40,8 +43,10 @@ each(commands, (handler, name) => {
       fetchRpc,
       lockBitcoind,
       userId: ctx.from.id.toString(),
+      botUserId,
       username: ctx.from.username,
       isPm: ctx.chat.id > 0,
+      isAdmin: ctx.from.id === +ADMIN_USER_ID,
       reply: _ => ctx.reply(_, { parse_mode: 'markdown' }),
       params:
         console.log(ctx.message) ||

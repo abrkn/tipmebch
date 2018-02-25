@@ -1,8 +1,15 @@
-const numeral = require('numeral');
-const { n } = require('../utils');
-const { formatBchWithUsd, parseBchOrUsdAmount } = require('../apis');
+const { formatBchWithUsd, parseBchOrUsdAmount, withdraw } = require('../apis');
 
-module.exports = async ({ message, reply, params, tipping, isPm }) => {
+module.exports = async ({
+  message,
+  reply,
+  params,
+  tipping,
+  isPm,
+  userId,
+  fetchRpc,
+  lockBitcoind,
+}) => {
   if (!isPm) {
     await reply('That command only works in a private message to me.');
     return;
@@ -17,19 +24,23 @@ module.exports = async ({ message, reply, params, tipping, isPm }) => {
   const theirAmount = await parseBchOrUsdAmount(amountRaw);
 
   if (!theirAmount) {
-    throw new Error(`Invalid amount: ${amountRaw}`);
+    await reply(
+      `I don't understand that amount. Tell me the amount of BCH. /withdraw <address> <0.0001>`
+    );
+    return;
   }
 
   try {
-    const { amount: actualAmount, txid } = await tipping.withdraw(
-      message.author.id,
+    const { amount: actualAmount, txid } = await withdraw(
+      userId,
       address,
-      theirAmount
+      theirAmount,
+      { fetchRpc, lockBitcoind }
     );
     const amountText = await formatBchWithUsd(actualAmount);
     const url = `https://explorer.bitcoin.com/bch/tx/${txid}`;
 
-    await reply(`You withdrew ${amountText} to \`${address}\`! See ${url}`);
+    await reply(`You withdrew ${amountText}: ${url}`);
   } catch (e) {
     await reply(`something crashed: ${e.message}`);
     throw e;

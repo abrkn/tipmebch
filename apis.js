@@ -1,4 +1,8 @@
-const { isValidTelegramUserIdFormat, getUserAccount } = require('./utils');
+const {
+  isValidTelegramUserIdFormat,
+  getUserAccount,
+  bchAddressToInternal,
+} = require('./utils');
 
 const assert = require('assert');
 const superagent = require('superagent');
@@ -9,6 +13,8 @@ const {
   formatUsd,
   hasTooManyDecimalsForSats,
 } = require('./utils');
+
+const MIN_WITHDRAW_AMOUNT = 0.0001;
 
 const fetchCoinmarketcap = async coin => {
   const { body } = await superagent(
@@ -21,56 +27,12 @@ const fetchCoinmarketcap = async coin => {
 
 const memFetchCoinmarketcap = pMemoize(fetchCoinmarketcap, { maxAge: 10e3 });
 
-exports.fetchMempool = async coin => {
-  const { text } = await superagent(
-    `https://api.blockchair.com/${coin}/mempool?u=${+new Date()}`
-  ).retry();
-
-  const body = JSON.parse(text);
-  const [mempool] = body.data.filter(_ => _.e === 'mempool_transactions');
-  return +mempool.c;
-};
-
 exports.fetchBchAddressBalance = async address => {
   const { body } = await superagent(
     `https://blockdozer.com/insight-api/addr/${address}/?noTxList=1`
   );
   const { balance } = body;
   return balance;
-};
-
-exports.fetchDifficultyAdjustmentEstimate = () =>
-  new Promise((resolve, reject) => {
-    const x = Xray();
-
-    x(
-      'https://bitcoinwisdom.com/bitcoin/difficulty',
-      'table:nth-child(2) tr:nth-child(3) td:nth-child(2)'
-    )((err, res) => {
-      if (err) {
-        return reject(err);
-      }
-
-      const withoutEscapes = res.replace(/[\n\t]/g, '');
-      const withSpace = withoutEscapes.replace(/,/, ', ');
-      const lowerCase = withSpace.toLowerCase();
-
-      resolve(lowerCase);
-    });
-  });
-
-exports.fetchTotalTetherTokens = () =>
-  superagent
-    .get('http://omniexplorer.info/ask.aspx?api=getpropertytotaltokens&prop=31')
-    .retry()
-    .then(_ => +_.text);
-
-exports.fetchRecommendedCoreSats = async () => {
-  const { body } = await superagent('https://bitcoinfees.earn.com/fees');
-
-  const { bestIndex, fees, medianTxSize } = body;
-
-  return fees[bestIndex].maxFee * medianTxSize;
 };
 
 const bchToUsd = async amount => {
@@ -86,10 +48,7 @@ const bchToUsd = async amount => {
 const usdToBch = async amount => {
   const usdRate = (await memFetchCoinmarketcap('bitcoin-cash')).price_usd;
 
-  return n(amount)
-    .div(usdRate)
-    .round(8)
-    .toNumber();
+  return Math.round(parseFloat(n(amount).div(usdRate)), 8);
 };
 
 const formatBchWithUsd = async amount => {
@@ -138,7 +97,7 @@ exports.parseBchOrUsdAmount = async value => {
   }
 
   if (n(bchAmount).decimalPlaces() > 8) {
-    throw new Error('Too many decimals');
+    throw new Error(`Too many decimals in ${bchAmount}`);
   }
 
   return bchAmount;
@@ -203,10 +162,51 @@ const transfer = async (
   }
 };
 
+const withdraw = async (
+  fromUserId,
+  address,
+  amount,
+  { fetchRpc, lockBitcoind }
+) => {
+  assert(isValidTelegramUserIdFormat(fromUserId));
+  assert.equal(typeof address, 'string');
+
+  const lock = await lockBitcoind();
+
+  try {
+    const amountN = n(amount);
+
+    assert(!hasTooManyDecimalsForSats(amountN), 'Too many decimals');
+    assert(amountN.isFinite(), 'Not finite');
+    assert(amountN.gt(0), 'Less than or equal to zero');
+    assert(
+      amountN.gte(MIN_WITHDRAW_AMOUNT),
+      `Amount less than minimum  of ${MIN_WITHDRAW_AMOUNT}`
+    );
+
+    const prevBalance = n(
+      await fetchRpc('getbalance', [getUserAccount(fromUserId)])
+    );
+    const nextBalance = prevBalance.minus(amountN);
+    assert(nextBalance.gte(0), 'Balance would become negative');
+
+    const txid = await fetchRpc('sendfrom', [
+      getUserAccount(fromUserId),
+      bchAddressToInternal(address),
+      amountN.toFixed(8),
+    ]);
+    assert(txid, 'Could not withdraw funds');
+
+    return { amount: amountN.toFixed(8), txid };
+  } finally {
+    await lock.unlock();
+  }
+};
+
 exports.fetchCoinmarketcap = fetchCoinmarketcap;
 exports.bchToUsd = bchToUsd;
 exports.formatBchWithUsd = formatBchWithUsd;
 exports.getBalanceForAccount = getBalanceForAccount;
 exports.getBalanceForUser = getBalanceForUser;
 
-Object.assign(exports, { transfer });
+Object.assign(exports, { transfer, withdraw });

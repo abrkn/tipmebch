@@ -1,6 +1,8 @@
 const {
   formatBchWithUsd,
   formatConfirmedAndUnconfirmedBalances,
+  getBalanceForUser,
+  getBalanceForAccount,
 } = require('../apis');
 const { formatBch, formatUsd, n } = require('../utils');
 
@@ -10,25 +12,27 @@ module.exports = async ({
   reply,
   params,
   tipping,
-  isDm,
-  authorIsStaff,
+  isPm,
+  isAdmin,
   client,
+  fetchRpc,
+  botUserId,
 }) => {
-  if (!isDm) {
+  if (!isPm) {
     await reply('This command is only available as a DM.');
     return;
   }
 
-  if (!authorIsStaff) {
-    console.warn('Author is not staff');
+  if (!isAdmin) {
+    console.warn('Author is not admin');
     return;
   }
 
   const printBotBalance = async () => {
-    const botUserId = client.user.id;
-    const confirmed = await tipping.getBalanceForUser(botUserId);
-    const unconfirmed = await tipping.getBalanceForUser(botUserId, {
+    const confirmed = await getBalanceForUser(botUserId, { fetchRpc });
+    const unconfirmed = await getBalanceForUser(botUserId, {
       minConf: 0,
+      fetchRpc,
     });
     const balanceText = await formatConfirmedAndUnconfirmedBalances(
       confirmed,
@@ -38,8 +42,11 @@ module.exports = async ({
   };
 
   const printWalletBalance = async () => {
-    const confirmed = await tipping.getBalanceForAccount('*');
-    const unconfirmed = await tipping.getBalanceForAccount('*', { minConf: 0 });
+    const confirmed = await getBalanceForAccount('*', { fetchRpc });
+    const unconfirmed = await getBalanceForAccount('*', {
+      minConf: 0,
+      fetchRpc,
+    });
     const balanceText = await formatConfirmedAndUnconfirmedBalances(
       confirmed,
       unconfirmed
