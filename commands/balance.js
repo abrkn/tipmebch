@@ -1,6 +1,6 @@
-const assert = require('assert');
 const { formatConfirmedAndUnconfirmedBalances } = require('../apis');
 const { getBalanceForUser, bchToUsd } = require('../apis');
+const { n } = require('../utils');
 
 const { BALANCE_STICKERS } = process.env;
 
@@ -24,5 +24,14 @@ module.exports = async ({ ctx, userId, fetchRpc }) => {
     unconfirmed
   );
 
+  const asUsd = await bchToUsd(
+    n(confirmed)
+      .plus(unconfirmed)
+      .toNumber()
+  );
+
+  const { stickerId } = balanceStickers.find(_ => asUsd >= _.level);
+
   await ctx.reply(`Balance: ${asText}`, { parse_mode: 'markdown' });
+  await ctx.replyWithSticker(stickerId);
 };
