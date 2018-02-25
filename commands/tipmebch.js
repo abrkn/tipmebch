@@ -21,12 +21,7 @@ module.exports = async ({ ctx, redisClient, reply, username }) => {
     redisClient.setAsync(`telegram.user.${username}`, ctx.message.from.id),
   ]);
 
-  await ctx.telegram.sendSticker(
-    ctx.message.from.id,
-    'CAADAgAD-QADYB_6CgT1j5rS_2aoAg'
-  );
-
-  await ctx.telegram.sendMessage(ctx.message.from.id, `Welcome! Try /help`);
+  await ctx.replyWithSticker('CAADAgAD-QADYB_6CgT1j5rS_2aoAg');
 
   await ctx.reply(
     `I now know who @${
