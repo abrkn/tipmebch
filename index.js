@@ -47,7 +47,7 @@ each(commands, (handler, name) => {
       username: ctx.from.username,
       isPm: ctx.chat.id > 0,
       isAdmin: ctx.from.id === +ADMIN_USER_ID,
-      reply: _ => ctx.reply(_, { parse_mode: 'markdown' }),
+      reply: _ => ctx.reply(_),
       params:
         console.log(ctx.message) ||
         ctx.message.text
