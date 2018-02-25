@@ -34,6 +34,10 @@ const { fetchRpc, lockBitcoind } = createBitcoinRpc({
 
 const bot = new Telegraf(TELEGRAM_BOT_TOKEN);
 
+bot.telegram.getMe().then(botInfo => {
+  bot.options.username = botInfo.username;
+});
+
 each(commands, (handler, name) => {
   debug(`Registering command, ${name}`);
 
