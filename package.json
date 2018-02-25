@@ -1,0 +1,37 @@
+{
+  "name": "just-tip",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "create-postgres-test": "psql postgresql://localhost/postgres -c 'create database tipmebch_test;'",
+    "drop-postgres-test": "psql postgresql://localhost/postgres -c 'drop database if exists tipmebch_test'",
+    "migrate-postgres-test": "pg-migrate schema --url=postgres://localhost/tipmebch_test --d schema",
+    "test-postgres": "npm run drop-postgres-test && npm run create-postgres-test && npm run migrate-postgres-test && DB=postgres://localhost/tipmebch_test pg-test tests",
+    "test-postgres-watch": "nodemon -e sql -w schema -w tests -x 'npm run test-postgres'",
+    "watch": "nodemon -x 'DEBUG=* npm start'",
+    "start": "node -r panik index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ava": "0.25.0",
+    "bignumber.js": "6.0.0",
+    "bitcoincashjs": "0.1.10",
+    "bluebird": "3.5.1",
+    "debug": "3.1.0",
+    "lodash": "4.17.5",
+    "numeral": "2.0.6",
+    "p-memoize": "1.0.0",
+    "panik": "1.0.1",
+    "pg-migrate": "2.0.1",
+    "pg-promise": "7.5.4",
+    "pg-test": "1.0.6",
+    "qr-image": "3.2.0",
+    "redis": "2.8.0",
+    "redlock": "3.1.1",
+    "superagent": "3.8.2",
+    "telegraf": "3.18.0"
+  }
+}
