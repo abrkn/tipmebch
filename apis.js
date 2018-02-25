@@ -127,12 +127,8 @@ const transfer = async (
   amount,
   { fetchRpc, lockBitcoind }
 ) => {
-  assert(isValidTelegramUserIdFormat(fromUserId));
-  assert(
-    isValidTelegramUserIdFormat(toUserId),
-    `${toUserId} is an invalid Telegram user id`
-  );
   assert.equal(typeof toUserId, 'string');
+  assert.equal(typeof fromUserId, 'string');
   assert.notEqual(fromUserId, toUserId, 'Cannot send to self');
 
   const lock = await lockBitcoind();

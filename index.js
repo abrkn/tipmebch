@@ -16,7 +16,7 @@ bluebird.promisifyAll(redis.Multi.prototype);
 const {
   BITCOIND_URL,
   TELEGRAM_BOT_TOKEN,
-  REDIS_URL = 'redis://localhost/10',
+  REDIS_URL = 'redis://localhost',
   NODE_ENV,
   STAFF_USER_ID,
   DEFAULT_STICKER_SET = 'pepe',
@@ -57,7 +57,7 @@ bot.use(async (ctx, next) => {
   await next();
 });
 
-bot.use(createIntro({ redisClient }));
+bot.use(createIntro({ redisClient, fetchRpc, lockBitcoind }));
 
 const handleCommandError = (ctx, error) => {
   console.error(`Unhandled error when processing message`);
