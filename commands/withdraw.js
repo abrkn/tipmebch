@@ -1,4 +1,5 @@
 const { formatBchWithUsd, parseBchOrUsdAmount, withdraw } = require('../apis');
+const { BalanceWouldBecomeNegativeError } = require('../errors');
 
 module.exports = async ({
   message,
@@ -9,6 +10,7 @@ module.exports = async ({
   userId,
   fetchRpc,
   lockBitcoind,
+  ctx,
 }) => {
   if (!isPm) {
     await reply('That command only works in a private message to me.');
@@ -43,7 +45,11 @@ module.exports = async ({
 
     await reply(`You withdrew ${amountText}: ${url}`);
   } catch (e) {
-    await reply(`something crashed: ${e.message}`);
-    throw e;
+    if (e instanceof BalanceWouldBecomeNegativeError) {
+      await ctx.replyWithSticker('CAADBAADrgADd0K8CJy9v19cUUIoAg');
+      await ctx.reply(`Your balance would become negative...`);
+    } else {
+      throw e;
+    }
   }
 };

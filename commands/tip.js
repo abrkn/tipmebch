@@ -1,5 +1,6 @@
-const { n, extractUserTelegramIdFromTag } = require('../utils');
+const { n } = require('../utils');
 const { fetchCoinmarketcap, formatBchWithUsd, transfer } = require('../apis');
+const { BalanceWouldBecomeNegativeError } = require('../errors');
 
 module.exports = async ({
   ctx,
@@ -67,11 +68,20 @@ module.exports = async ({
     bchAmount = theirAmount;
   }
 
-  const actualAmount = await transfer(userId, toUserId, bchAmount, {
-    fetchRpc,
-    lockBitcoind,
-  });
-  const amountText = await formatBchWithUsd(actualAmount);
+  try {
+    const actualAmount = await transfer(userId, toUserId, bchAmount, {
+      fetchRpc,
+      lockBitcoind,
+    });
+    const amountText = await formatBchWithUsd(actualAmount);
 
-  await reply(`You tipped ${amountText} to ${toUserRaw}!`);
+    await reply(`You tipped ${amountText} to ${toUserRaw}!`);
+  } catch (e) {
+    if (e instanceof BalanceWouldBecomeNegativeError) {
+      await ctx.replyWithSticker('CAADBAADrgADd0K8CJy9v19cUUIoAg');
+      await ctx.reply(`Your balance would become negative...`);
+    } else {
+      throw e;
+    }
+  }
 };

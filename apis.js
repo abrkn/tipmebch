@@ -4,6 +4,8 @@ const {
   bchAddressToInternal,
 } = require('./utils');
 
+const { BalanceWouldBecomeNegativeError } = require('./errors');
+
 const assert = require('assert');
 const superagent = require('superagent');
 const pMemoize = require('p-memoize');
@@ -147,7 +149,12 @@ const transfer = async (
     );
 
     const nextBalance = prevBalance.minus(amountN);
-    assert(nextBalance.gte(0), 'Balance would become negative');
+
+    if (nextBalance.lt(0)) {
+      throw new BalanceWouldBecomeNegativeError(
+        'Balance would become negative'
+      );
+    }
 
     const moved = await fetchRpc('move', [
       getUserAccount(fromUserId),
@@ -188,7 +195,12 @@ const withdraw = async (
       await fetchRpc('getbalance', [getUserAccount(fromUserId)])
     );
     const nextBalance = prevBalance.minus(amountN);
-    assert(nextBalance.gte(0), 'Balance would become negative');
+
+    if (nextBalance.lt(0)) {
+      throw new BalanceWouldBecomeNegativeError(
+        'Balance would become negative'
+      );
+    }
 
     const txid = await fetchRpc('sendfrom', [
       getUserAccount(fromUserId),
