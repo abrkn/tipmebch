@@ -7,6 +7,7 @@ const { each } = require('lodash');
 const redis = require('redis');
 const debug = require('debug')('tipmebch');
 const { printErrorAndExit } = require('panik');
+const createIntro = require('./intro');
 
 bluebird.promisifyAll(redis.RedisClient.prototype);
 bluebird.promisifyAll(redis.Multi.prototype);
@@ -37,6 +38,8 @@ const bot = new Telegraf(TELEGRAM_BOT_TOKEN);
 bot.telegram.getMe().then(botInfo => {
   bot.options.username = botInfo.username;
 });
+
+bot.use(createIntro({ redisClient }));
 
 each(commands, (handler, name) => {
   debug(`Registering command, ${name}`);
