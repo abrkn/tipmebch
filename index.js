@@ -41,6 +41,22 @@ bot.telegram.getMe().then(botInfo => {
   bot.options.username = botInfo.username;
 });
 
+bot.use(async (ctx, next) => {
+  const stickerSet =
+    (await redisClient.getAsync(
+      `telegram.chat.settings:${ctx.chat.id}.sticker_set`
+    )) || DEFAULT_STICKER_SET;
+
+  // TODO: Migrate other properties into ctx
+  Object.assign(ctx, {
+    stickerSet,
+    maybeReplyFromStickerSet: stickerName =>
+      maybeReplyFromStickerSet(ctx, stickerSet, stickerName),
+  });
+
+  await next();
+});
+
 bot.use(createIntro({ redisClient }));
 
 const handleCommandError = (ctx, error) => {
@@ -56,11 +72,6 @@ const handleCommandError = (ctx, error) => {
 };
 
 const handleCommand = async (handler, ctx) => {
-  const stickerSet =
-    (await redisClient.getAsync(
-      `telegram.chat.settings:${ctx.chat.id}.sticker_set`
-    )) || DEFAULT_STICKER_SET;
-
   const isPm = ctx.chat.id > 0;
 
   // TODO: Extract and use p-memoize. Maybe ctx contains admin status?
@@ -69,12 +80,6 @@ const handleCommand = async (handler, ctx) => {
     (await ctx
       .getChatAdministrators(ctx.chat.id)
       .then(admins => !!admins.find(_ => _.user.id === ctx.from.id)));
-
-  // TODO: Migrate other properties into ctx
-  Object.assign(ctx, {
-    maybeReplyFromStickerSet: stickerName =>
-      maybeReplyFromStickerSet(ctx, stickerSet, stickerName),
-  });
 
   return handler({
     ctx,
@@ -94,7 +99,6 @@ const handleCommand = async (handler, ctx) => {
         .slice(1)
         .filter(_ => _.length),
     redisClient,
-    stickerSet,
   });
 };
 

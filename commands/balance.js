@@ -28,7 +28,7 @@ const getBalanceSticker = (setName, usdBalance) => {
   return sample(levelStickers);
 };
 
-module.exports = async ({ ctx, userId, fetchRpc, stickerSet }) => {
+module.exports = async ({ ctx, userId, fetchRpc }) => {
   const confirmed = await getBalanceForUser(userId, { fetchRpc });
 
   const unconfirmed = await getBalanceForUser(userId, {
@@ -49,7 +49,7 @@ module.exports = async ({ ctx, userId, fetchRpc, stickerSet }) => {
 
   await ctx.reply(`Balance: ${asText}`, { parse_mode: 'markdown' });
 
-  const stickerId = getBalanceSticker(stickerSet, asUsd);
+  const stickerId = getBalanceSticker(ctx.stickerSet, asUsd);
 
   if (stickerId) {
     await ctx.replyWithSticker(stickerId);
