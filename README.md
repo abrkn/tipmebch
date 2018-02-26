@@ -28,6 +28,12 @@ export DEFAULT_STICKER_SET=pepe
 export REDIS_URL=redis://localhost
 ```
 
+## Running
+
+```bash
+npm start
+```
+
 ## License
 
 See LICENSE
