@@ -1,4 +1,3 @@
-tipmebch - Introduce yourself to the bot
 tipbch - Send tip. Example /tipbch $1.23 @abrkn or /tipbch 0.001 @abrkn for BCH
 balance - Show your balance
 deposit - Show your deposit address (PM)
@@ -6,4 +5,4 @@ withdraw - Withdraw funds. Example <address> <bch amount>
 stats - Show tipping stats
 help - Show help
 about - Show information about the bot
-setstickerset [name] - Set sticker set for channel (pepe or none)
+setstickerset - Set sticker set for channel. /setstickerset <pepe, none>
