@@ -1,15 +1,18 @@
 {
-  "name": "just-tip",
+  "name": "tipmebch",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Tipping for Telegram with BCH",
   "scripts": {
     "watch": "nodemon -x 'DEBUG=* npm start'",
     "start": "node -r panik index.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "bitcoin",
+    "bitcoin cash",
+    "bch"
+  ],
+  "author": "Andreas Brekken <andreas@brekken.com>",
+  "license": "MIT",
   "dependencies": {
     "bignumber.js": "6.0.0",
     "bitcoincashjs": "0.1.10",
@@ -25,5 +28,20 @@
     "shortid": "2.2.8",
     "superagent": "3.8.2",
     "telegraf": "3.18.0"
+  },
+  "main": "index.js",
+  "devDependencies": {
+    "nodemon": "1.15.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abrkn/tipmebch.git"
+  },
+  "bugs": {
+    "url": "https://github.com/abrkn/tipmebch/issues"
+  },
+  "homepage": "https://github.com/abrkn/tipmebch#readme",
+  "engines": {
+    "node": ">=8.0.0"
   }
 }
