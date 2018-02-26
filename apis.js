@@ -158,7 +158,25 @@ const transfer = async (
       getUserAccount(toUserId),
       amountN.toFixed(8),
     ]);
+
     assert.equal(moved, true, 'Could not move funds');
+
+    // TODO: Move outside lock
+    const transferId = shortid.generate();
+
+    await redisClient
+      .multi()
+      .rpush('transfers', transferId)
+      .rpush(`user:${fromUserId}:transfers`, transferId)
+      .rpush(`user:${toUserId}:transfers`, transferId)
+      .set(`transfers:${transferId}`, {
+        transferId,
+        fromUserId,
+        toUserId,
+        timestamp: +new Date(),
+        amount,
+      })
+      .execAsync();
 
     return amountN.toFixed(8);
   } finally {
