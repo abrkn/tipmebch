@@ -1,3 +1,4 @@
+const shortid = require('shortid');
 const {
   isValidTelegramUserIdFormat,
   getUserAccount,
@@ -125,14 +126,10 @@ const transfer = async (
   fromUserId,
   toUserId,
   amount,
-  { fetchRpc, lockBitcoind }
+  { fetchRpc, lockBitcoind, redisClient }
 ) => {
-  assert(isValidTelegramUserIdFormat(fromUserId));
-  assert(
-    isValidTelegramUserIdFormat(toUserId),
-    `${toUserId} is an invalid Telegram user id`
-  );
   assert.equal(typeof toUserId, 'string');
+  assert.equal(typeof fromUserId, 'string');
   assert.notEqual(fromUserId, toUserId, 'Cannot send to self');
 
   const lock = await lockBitcoind();
@@ -161,7 +158,25 @@ const transfer = async (
       getUserAccount(toUserId),
       amountN.toFixed(8),
     ]);
+
     assert.equal(moved, true, 'Could not move funds');
+
+    // TODO: Move outside lock
+    const transferId = shortid.generate();
+
+    await redisClient
+      .multi()
+      .rpush('transfers', transferId)
+      .rpush(`user:${fromUserId}:transfers`, transferId)
+      .rpush(`user:${toUserId}:transfers`, transferId)
+      .set(`transfers:${transferId}`, {
+        transferId,
+        fromUserId,
+        toUserId,
+        timestamp: +new Date(),
+        amount,
+      })
+      .execAsync();
 
     return amountN.toFixed(8);
   } finally {

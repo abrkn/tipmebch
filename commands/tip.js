@@ -1,4 +1,5 @@
 const { n } = require('../utils');
+const shortid = require('shortid');
 const {
   fetchCoinmarketcap,
   formatBchWithUsd,
@@ -6,6 +7,7 @@ const {
   bchToUsd,
 } = require('../apis');
 const { BalanceWouldBecomeNegativeError } = require('../errors');
+const debug = require('debug')('tipmebch');
 
 module.exports = async ({
   ctx,
@@ -41,13 +43,7 @@ module.exports = async ({
   const toUsername = toUserMatch[1];
 
   const toUserId = await redisClient.getAsync(`telegram.user.${toUsername}`);
-
-  if (!toUserId) {
-    await reply(
-      `I've never seen @${toUsername} before. Have them write /tipmebch here. I know this is annoying and a fix will be ready in a few days.`
-    );
-    return;
-  }
+  const userIsKnown = !!toUserId;
 
   const amountMatch = amountRaw.match(/^(\$?)([0-9\.]+)$/);
 
@@ -73,12 +69,48 @@ module.exports = async ({
     bchAmount = theirAmount;
   }
 
+  debug('User is known? %s', userIsKnown);
+
   let actualAmount;
+  let bitcoinAccountId;
+  let unclaimedId;
+
+  if (userIsKnown) {
+    bitcoinAccountId = toUserId;
+  } else {
+    unclaimedId = shortid.generate();
+    bitcoinAccountId = `telegram-unclaimed-${unclaimedId}`;
+
+    const unclaimedKey = `telegram.unclaimed.${unclaimedId}`;
+
+    const unclaimed = {
+      bitcoinAccountId,
+      senderUserId: +userId,
+      chatId: ctx.chat.id,
+      bchAmount,
+      receiverUsername: toUsername,
+      senderUsername: username,
+    };
+
+    debug(
+      `Receiver ${toUsername} is not known. Storing funds in %O`,
+      unclaimed
+    );
+
+    await redisClient.rpushAsync(
+      `telegram.unclaimed.received:${toUsername}`,
+
+      unclaimedId
+    );
+
+    await redisClient.setAsync(unclaimedKey, JSON.stringify(unclaimed));
+  }
 
   try {
-    actualAmount = await transfer(userId, toUserId, bchAmount, {
+    actualAmount = await transfer(userId, bitcoinAccountId, bchAmount, {
       fetchRpc,
       lockBitcoind,
+      redisClient,
     });
   } catch (e) {
     if (e instanceof BalanceWouldBecomeNegativeError) {
@@ -91,7 +123,14 @@ module.exports = async ({
   }
 
   const amountText = await formatBchWithUsd(actualAmount);
+
   await reply(`You tipped ${amountText} to ${toUserRaw}!`);
+
+  if (!userIsKnown) {
+    await reply(
+      `@${toUsername} needs to claim the tip by saying /claim. @${username} can reverse the tip with "/reverse ${unclaimedId}" until then`
+    );
+  }
 
   const usdAmount = await bchToUsd(actualAmount);
 

@@ -9,3 +9,4 @@ exports.about = require('./about');
 exports.stats = require('./stats');
 exports.start = require('./start');
 exports.setstickerset = require('./setStickerSet');
+exports.reverse = require('./reverse');
