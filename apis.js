@@ -1,3 +1,4 @@
+const shortid = require('shortid');
 const {
   isValidTelegramUserIdFormat,
   getUserAccount,
@@ -125,7 +126,7 @@ const transfer = async (
   fromUserId,
   toUserId,
   amount,
-  { fetchRpc, lockBitcoind }
+  { fetchRpc, lockBitcoind, redisClient }
 ) => {
   assert.equal(typeof toUserId, 'string');
   assert.equal(typeof fromUserId, 'string');

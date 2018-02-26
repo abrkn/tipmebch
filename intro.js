@@ -21,6 +21,7 @@ module.exports = function createIntro({
     await transfer(bitcoinAccountId, message.from.id.toString(), bchAmount, {
       fetchRpc,
       lockBitcoind,
+      redisClient,
     });
 
     const amountText = await formatBchWithUsd(bchAmount);

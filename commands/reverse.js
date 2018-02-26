@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { formatBchWithUsd } = require('../apis');
+const { formatBchWithUsd, transfer } = require('../apis');
 const debug = require('debug')('tipmebch');
 
 module.exports = async ({
@@ -11,6 +11,7 @@ module.exports = async ({
   redisClient,
   username,
   params,
+  lockBitcoind,
 }) => {
   if (params.length !== 1) {
     await reply(
@@ -24,11 +25,8 @@ module.exports = async ({
   assert(unclaimedId.match(/^[a-z0-9_-]+$/i), `Bad id. ${unclaimedId}`);
 
   const unclaimed = await redisClient
-    .multi()
-    .get(`telegram.unclaimed.${unclaimedId}`)
-    .del(`telegram.unclaimed.${unclaimedId}`)
-    .execAsync()
-    .then(_ => console.log(_) || (_[0] && JSON.parse(_[0])));
+    .getAsync(`telegram.unclaimed.${unclaimedId}`)
+    .then(JSON.parse);
 
   if (!unclaimed) {
     debug(`Can't find claim with id ${unclaimedId}`);
@@ -54,16 +52,31 @@ module.exports = async ({
     return await reply('Claim not found');
   }
 
-  // Remove from receiver list of recipient
-  await redisClient.lremAsync(
-    `telegram.unclaimed.received:${username}`,
-    0,
-    unclaimedId
-  );
+  await redisClient
+    .multi()
+    .del(`telegram.unclaimed.${unclaimedId}`)
+    .lrem(`telegram.unclaimed.received:${username}`, 0, unclaimedId)
+    .execAsync();
+
+  if (!unclaimed) {
+    debug(`Can't find claim with id ${unclaimedId}`);
+    return await reply('Claim not found');
+  }
 
   // TODO: Tip counter does not decrease
 
-  const amountText = await formatBchWithUsd(bchAmount);
+  const actualAmount = await transfer(
+    `telegram-unclaimed-${unclaimedId}`,
+    senderUserId.toString(),
+    bchAmount,
+    {
+      fetchRpc,
+      lockBitcoind,
+      redisClient,
+    }
+  );
+
+  const amountText = await formatBchWithUsd(actualAmount);
 
   try {
     await ctx.telegram.sendMessage(

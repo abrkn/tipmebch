@@ -110,6 +110,7 @@ module.exports = async ({
     actualAmount = await transfer(userId, bitcoinAccountId, bchAmount, {
       fetchRpc,
       lockBitcoind,
+      redisClient,
     });
   } catch (e) {
     if (e instanceof BalanceWouldBecomeNegativeError) {
