@@ -77,6 +77,7 @@ const handleCommand = async (handler, ctx) => {
   // TODO: Extract and use p-memoize. Maybe ctx contains admin status?
   const isAdmin =
     isPm ||
+    (await ctx.getChat(ctx.chat.id)).all_members_are_administrators ||
     (await ctx
       .getChatAdministrators(ctx.chat.id)
       .then(admins => !!admins.find(_ => _.user.id === ctx.from.id)));
