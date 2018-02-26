@@ -30,7 +30,9 @@ module.exports = async ({ ctx, fetchRpc, userId, isPm, reply }) => {
     {
       media: { source: qr },
       type: 'photo',
-      caption: `To deposit Bitcoin (BCH), send to: ${address}`,
+      caption: `Scan this QR code to deposit`,
     },
   ]);
+
+  await ctx.reply(`To deposit Bitcoin (BCH), send to: ${address}`);
 };
