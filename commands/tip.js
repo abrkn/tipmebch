@@ -44,7 +44,7 @@ module.exports = async ({
 
   if (!toUserId) {
     await reply(
-      `I've never seen @${toUsername} before. Have them write /tipmebch here.`
+      `I've never seen @${toUsername} before. Have them write /tipmebch here. I know this is annoying and a fix will be ready in a few days.`
     );
     return;
   }
