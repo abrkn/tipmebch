@@ -13,7 +13,7 @@ module.exports = async ({
   params,
   tipping,
   isPm,
-  isAdmin,
+  isStaff,
   client,
   fetchRpc,
   botUserId,
@@ -23,7 +23,7 @@ module.exports = async ({
     return;
   }
 
-  if (!isAdmin) {
+  if (!isStaff) {
     console.warn('Author is not admin');
     return;
   }
