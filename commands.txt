@@ -6,3 +6,4 @@ withdraw - Withdraw funds. Example <address> <bch amount>
 stats - Show tipping stats
 help - Show help
 about - Show information about the bot
+setstickerset [name] - Set sticker set for channel (pepe or none)

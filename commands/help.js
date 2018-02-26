@@ -15,6 +15,7 @@ module.exports = async ({ ctx, fetchRpc, userId, isPm, reply }) => {
       '/stats - Show tipping stats',
       '/help - This help',
       '/about - Information about the bot',
+      '/setstickerset [name] - Set sticker set for channel (pepe or none)',
     ].join('\n')
   );
 };
