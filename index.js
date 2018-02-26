@@ -8,6 +8,7 @@ const redis = require('redis');
 const debug = require('debug')('tipmebch');
 const { printErrorAndExit } = require('panik');
 const createIntro = require('./intro');
+const { maybeReplyFromStickerSet } = require('./utils');
 
 bluebird.promisifyAll(redis.RedisClient.prototype);
 bluebird.promisifyAll(redis.Multi.prototype);
@@ -17,7 +18,8 @@ const {
   TELEGRAM_BOT_TOKEN,
   REDIS_URL = 'redis://localhost/10',
   NODE_ENV,
-  ADMIN_USER_ID,
+  STAFF_USER_ID,
+  DEFAULT_STICKER_SET = 'pepe',
 } = process.env;
 
 assert(REDIS_URL, 'REDIS_URL');
@@ -41,36 +43,66 @@ bot.telegram.getMe().then(botInfo => {
 
 bot.use(createIntro({ redisClient }));
 
+const handleCommandError = (ctx, error) => {
+  console.error(`Unhandled error when processing message`);
+  console.error(ctx.message);
+  console.error(error.stack);
+
+  ctx.reply(`Something crashed and I'm not sure why. Sorry!`);
+
+  if (NODE_ENV !== 'production') {
+    ctx.reply(error.stack);
+  }
+};
+
+const handleCommand = async (handler, ctx) => {
+  const stickerSet =
+    (await redisClient.getAsync(
+      `telegram.chat.settings:${ctx.chat.id}.sticker_set`
+    )) || DEFAULT_STICKER_SET;
+
+  const isPm = ctx.chat.id > 0;
+
+  // TODO: Extract and use p-memoize. Maybe ctx contains admin status?
+  const isAdmin =
+    isPm ||
+    (await ctx
+      .getChatAdministrators(ctx.chat.id)
+      .then(admins => !!admins.find(_ => _.user.id === ctx.from.id)));
+
+  // TODO: Migrate other properties into ctx
+  Object.assign(ctx, {
+    maybeReplyFromStickerSet: stickerName =>
+      maybeReplyFromStickerSet(ctx, stickerSet, stickerName),
+  });
+
+  return handler({
+    ctx,
+    fetchRpc,
+    lockBitcoind,
+    userId: ctx.from.id.toString(),
+    botUserId,
+    username: ctx.from.username,
+    isPm,
+    isStaff: ctx.from.id === +STAFF_USER_ID,
+    isAdmin,
+    reply: _ => ctx.reply(_),
+    params:
+      console.log(ctx.message) ||
+      ctx.message.text
+        .split(' ')
+        .slice(1)
+        .filter(_ => _.length),
+    redisClient,
+    stickerSet,
+  });
+};
+
 each(commands, (handler, name) => {
   debug(`Registering command, ${name}`);
 
   bot.command(name, ctx =>
-    handler({
-      ctx,
-      fetchRpc,
-      lockBitcoind,
-      userId: ctx.from.id.toString(),
-      botUserId,
-      username: ctx.from.username,
-      isPm: ctx.chat.id > 0,
-      isStaff: ctx.from.id === +ADMIN_USER_ID,
-      reply: _ => ctx.reply(_),
-      params:
-        console.log(ctx.message) ||
-        ctx.message.text
-          .split(' ')
-          .slice(1)
-          .filter(_ => _.length),
-      redisClient,
-    }).catch(error => {
-      console.error(`Unhandled error when processing message`);
-      console.error(ctx.message);
-      console.error(error.stack);
-      ctx.reply(`Something crashed and I'm not sure why. Sorry!`);
-      if (NODE_ENV !== 'production') {
-        ctx.reply(error.stack);
-      }
-    })
+    handleCommand(handler, ctx).catch(error => handleCommandError(ctx, error))
   );
 });
 

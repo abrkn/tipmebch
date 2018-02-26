@@ -1,7 +1,7 @@
 const { version } = require('../package.json');
 
 module.exports = async ({ ctx, fetchRpc, userId, isPm, reply }) => {
-  await ctx.replyWithSticker('CAADBAADtQEAAndCvAi2Pk-ZhRfJpgI');
+  await ctx.maybeReplyFromStickerSet('about');
 
   await reply(
     [

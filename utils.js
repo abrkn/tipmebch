@@ -3,6 +3,8 @@ const bch = require('bitcoincashjs');
 const numeral = require('numeral');
 const qr = require('qr-image');
 const BigNumber = require('bignumber.js');
+const { sample } = require('lodash');
+const stickers = require('./stickers');
 
 const THREE_TICKS = '```';
 
@@ -86,10 +88,25 @@ exports.getAddressForUser = async (userId, { fetchRpc }) => {
   return await fetchRpc('getaccountaddress', [getUserAccount(userId)]);
 };
 
+const maybeReplyFromStickerSet = (ctx, setName, stickerName) => {
+  const set = stickers[setName];
+  assert(set, `Sticker set ${setName} not found`);
+
+  const variants = set[stickerName];
+
+  const stickerId = sample(variants);
+  if (!stickerId) {
+    return;
+  }
+
+  return ctx.replyWithSticker(stickerId);
+};
+
 Object.assign(exports, {
   THREE_TICKS,
   hasTooManyDecimalsForSats,
   n,
+  maybeReplyFromStickerSet,
 });
 
 exports.getUserAccount = getUserAccount;

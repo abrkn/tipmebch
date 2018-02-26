@@ -21,7 +21,7 @@ module.exports = async ({
     await reply(
       `I don't understand this command. I expected "/tipbch 0.01 @username" or "/tipbch $1 @username"`
     );
-    await ctx.replyWithSticker('CAADAgADmQADYB_6Ci92NR8hZLUFAg');
+    await ctx.maybeReplyFromStickerSet('confused');
     return;
   }
 
@@ -34,7 +34,7 @@ module.exports = async ({
     await reply(
       `That username format is invalid. I'm expecting /tipbch $1 @SomeUserName`
     );
-    await ctx.replyWithSticker('CAADAgADmQADYB_6Ci92NR8hZLUFAg');
+    await ctx.maybeReplyFromStickerSet('confused');
     return;
   }
 
@@ -55,7 +55,7 @@ module.exports = async ({
     await reply(
       `I don't understand the amount. I expected "/tipbch 0.01 @username" or "/tipbch $1 @username"`
     );
-    await ctx.replyWithSticker('CAADAgADmQADYB_6Ci92NR8hZLUFAg');
+    await ctx.maybeReplyFromStickerSet('confused');
     return;
   }
 
@@ -82,7 +82,7 @@ module.exports = async ({
     });
   } catch (e) {
     if (e instanceof BalanceWouldBecomeNegativeError) {
-      await ctx.replyWithSticker('CAADBAADrgADd0K8CJy9v19cUUIoAg');
+      await ctx.maybeReplyFromStickerSet('insufficient-balance');
       await ctx.reply(`Your balance would become negative...`);
       return;
     } else {

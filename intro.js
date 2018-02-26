@@ -32,7 +32,7 @@ module.exports = function createIntro({ redisClient }) {
         redisClient.setAsync(`telegram.user.${username}`, message.from.id),
       ]);
 
-      await ctx.replyWithSticker('CAADAgAD-QADYB_6CgT1j5rS_2aoAg');
+      await ctx.maybeReplyFromStickerSet('intro');
 
       await ctx.reply(
         `I now know who @${

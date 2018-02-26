@@ -1,0 +1,19 @@
+{
+  "pepe": {
+    "about": ["CAADBAADtQEAAndCvAi2Pk-ZhRfJpgI"],
+    "stats": ["CAADBAADCwIAAndCvAiobG7d3xsDXQI"],
+    "confused": [
+      "CAADAgADmQADYB_6Ci92NR8hZLUFAg",
+      "CAADAgADiAEAAonq5QccwEN475y5uwI"
+    ],
+    "insufficient-balance": ["CAADBAADrgADd0K8CJy9v19cUUIoAg"],
+    "intro": ["CAADAgAD-QADYB_6CgT1j5rS_2aoAg"],
+    "balance": [
+      [0, ["CAADAgADewEAAgeGFQcTcnTD9JAHNQI"]],
+      [0.01, ["CAADAgADnAEAAonq5Qd5UqR3Uh05gwI"]],
+      [100, ["CAADAgADkgEAAgeGFQeGCO0Qw3_u8wI"]],
+      [1000, ["CAADBAAD5hMAAjZHEwABaJeHmAOGczgC"]]
+    ]
+  },
+  "none": {}
+}

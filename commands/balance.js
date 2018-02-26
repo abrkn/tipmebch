@@ -1,17 +1,34 @@
 const { formatConfirmedAndUnconfirmedBalances } = require('../apis');
 const { getBalanceForUser, bchToUsd } = require('../apis');
 const { n } = require('../utils');
+const stickers = require('../stickers');
+const { sample, findLast } = require('lodash');
 
-const { BALANCE_STICKERS } = process.env;
+const getBalanceSticker = (setName, usdBalance) => {
+  const set = stickers[setName];
+  if (!set) {
+    return null;
+  }
 
-const balanceStickers = BALANCE_STICKERS.split(/,/g)
-  .reduce((prev, pair) => {
-    const [level, stickerId] = pair.split(/:/g);
-    return [...prev, { level: +level, stickerId }];
-  }, [])
-  .reverse();
+  const levels = set.balance;
+  if (!levels || !levels.length) {
+    return null;
+  }
 
-module.exports = async ({ ctx, userId, fetchRpc }) => {
+  const level = findLast(
+    levels,
+    ([minUsdBalance]) => usdBalance >= minUsdBalance
+  );
+  if (!level) {
+    return null;
+  }
+
+  const [, levelStickers] = level;
+
+  return sample(levelStickers);
+};
+
+module.exports = async ({ ctx, userId, fetchRpc, stickerSet }) => {
   const confirmed = await getBalanceForUser(userId, { fetchRpc });
 
   const unconfirmed = await getBalanceForUser(userId, {
@@ -30,7 +47,7 @@ module.exports = async ({ ctx, userId, fetchRpc }) => {
       .toNumber()
   );
 
-  const { stickerId } = balanceStickers.find(_ => asUsd >= _.level);
+  const stickerId = getBalanceSticker(stickerSet, asUsd);
 
   await ctx.reply(`Balance: ${asText}`, { parse_mode: 'markdown' });
   await ctx.replyWithSticker(stickerId);
