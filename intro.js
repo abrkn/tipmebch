@@ -65,20 +65,6 @@ module.exports = function createIntro({
     const { username } = message.from;
 
     if (!username) {
-      const redisKey = `telegram.told.need.username:${message.from.id}`;
-
-      if (await redisClient.existsAsync(redisKey)) {
-        return;
-      }
-
-      await ctx.reply(
-        `${
-          ctx.from.first_name
-        }, you need to set a username in your Telegram Settings`
-      );
-
-      await redisClient.setAsync(redisKey, +new Date());
-
       return;
     }
 
