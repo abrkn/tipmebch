@@ -8,6 +8,7 @@ const redis = require('redis');
 const debug = require('debug')('tipmebch');
 const { printErrorAndExit } = require('panik');
 const createIntro = require('./intro');
+const createZombie = require('./zombie');
 const { maybeReplyFromStickerSet } = require('./utils');
 
 bluebird.promisifyAll(redis.RedisClient.prototype);
@@ -56,6 +57,8 @@ bot.use(async (ctx, next) => {
 
   await next();
 });
+
+bot.use(createZombie());
 
 bot.use(createIntro({ redisClient, fetchRpc, lockBitcoind }));
 
