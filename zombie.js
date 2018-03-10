@@ -1,6 +1,6 @@
 const debug = require('debug')('tipmebch');
 
-module.exports = ({ timeout = 5 * 60 } = {}) => {
+module.exports = ({ timeout = 60 * 60 } = {}) => {
   let timer;
 
   const createTimer = () => {
