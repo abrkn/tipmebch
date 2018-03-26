@@ -16,5 +16,32 @@
     ],
     "claim": ["CAADBAADtQEAAndCvAi2Pk-ZhRfJpgI"]
   },
+  "mira": {
+    "about": ["CAADBQAD0AAD_6VWBOX0TK4YLY_AAg"],
+    "stats": ["CAADBQAD1AAD_6VWBMdV0WR8XabHAg"],
+    "confused": ["CAADBQADMQEAAv-lVgSivalQgmD6xwI"],
+    "insufficient-balance": ["CAADBQAD4QAD_6VWBEQ5JcDmJAMVAg"],
+    "intro": ["CAADBQADygAD_6VWBGWljbvogHVrAg"],
+    "balance": [
+      [0, ["CAADBQADxgAD_6VWBIppm2wnpiCyAg"]],
+      [0.01, ["CAADBQAD8QAD_6VWBLU6dqD0PlU1Ag"]],
+      [100, ["CAADBQADyAAD_6VWBLkBmzQDteC9Ag"]],
+      [1000, ["CAADBQAD2AAD_6VWBAuNIN3BbxQKAg"]]
+    ],
+    "claim": ["CAADBQADygAD_6VWBGWljbvogHVrAg"]
+  },
+  "windex": {
+    "about": ["CAADBQADCQADH5kvG5vXz_mktwyaAg"],
+    "stats": ["CAADBQADDwADH5kvGx_p_tFJ3_4aAg"],
+    "confused": ["CAADBQADEQADH5kvG3XgQzL3-bS6Ag"],
+    "insufficient-balance": ["CAADBQADDgADH5kvGzlJV46QAR91Ag"],
+    "intro": ["CAADBQADAgADH5kvG6jjEJ1lqx_0Ag"],
+    "balance": [
+      [0, ["CAADBQADDQADH5kvG1RRjDrOjVPnAg"]],
+      [0.01, ["CAADBQADEQADH5kvG3XgQzL3-bS6Ag"]],
+      [100, ["CAADBQADDAADH5kvG06zzzCZ89G0Ag"]]
+    ],
+    "claim": ["CAADBQADAgADH5kvG6jjEJ1lqx_0Ag"]
+  },
   "none": {}
 }
