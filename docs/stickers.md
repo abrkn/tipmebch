@@ -3,6 +3,15 @@ such as the `pepe` set, has stickers for different types of responses.
 Each response can have multiple stickers, in which case one is chosen at
 random.
 
+The stickers are:
+
+* `about`: Response to `/about`
+* `stats`: Response to `/stats`
+* `insufficient-balance`: Response when user tries to exceed his available balance
+* `intro`: Not sure if used
+* `balance`: See below
+* `claim`: Response to `/claim` (introduction)
+
 The `balance` stickers are different in that they vary by the USD balance
 of the user initiating the command. For example:
 
