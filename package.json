@@ -1,6 +1,6 @@
 {
   "name": "tipmebch",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Tipping for Telegram with BCH",
   "scripts": {
     "watch": "nodemon -x 'DEBUG=* npm start'",
