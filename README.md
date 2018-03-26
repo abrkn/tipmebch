@@ -34,9 +34,13 @@ export REDIS_URL=redis://localhost
 npm start
 ```
 
+## Stickers sets
+
+See [sticker set documentation](docs/stickers.md)
+
 ## License
 
-See LICENSE
+See [LICENSE](LICENSE)
 
 ## Author
 
