@@ -5,7 +5,7 @@ module.exports = async ({ ctx, fetchRpc, userId, isPm, reply }) => {
 
   await reply(
     [
-      `I'm a bot (v${version}) written by @abrkn for tipping Bitcoin (BCH) on Telegram`,
+      `I'm a bot (v${version}) written by Andreas Brekken (@abrkn) for tipping Bitcoin (BCH) on Telegram`,
       'Try the /help command in a private message',
       `You can tip me and it'll go to the faucet once it's ready.`,
       `I'm open source: https://github.com/abrkn/tipmebch`,
