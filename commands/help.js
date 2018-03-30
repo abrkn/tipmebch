@@ -11,7 +11,7 @@ module.exports = async ({ ctx, fetchRpc, userId, isPm, reply }) => {
       '/tipbch 0.0001 - Send tip (BCH)',
       '/balance - Show your balance',
       '/deposit - Show your deposit address (PM)',
-      '/withdraw <address> <bch amount> - Withdraw funds',
+      '/withdraw <address> [<bch amount>|$<usd amount>|all> - Withdraw funds',
       '/stats - Show tipping stats',
       '/help - This help',
       '/about - Information about the bot',

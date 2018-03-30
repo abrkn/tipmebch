@@ -3,6 +3,7 @@ const {
   parseBchOrUsdAmount,
   withdraw,
   bchToUsd,
+  getBalanceForUser,
 } = require('../apis');
 const { BalanceWouldBecomeNegativeError } = require('../errors');
 
@@ -30,7 +31,11 @@ module.exports = async ({
 
   const [address, amountRaw] = params;
 
-  const theirAmount = await parseBchOrUsdAmount(amountRaw);
+  const isWithdrawAll = amountRaw.toLowerCase() === 'all';
+
+  const theirAmount = isWithdrawAll
+    ? await getBalanceForUser(userId, { minConf: 1, fetchRpc })
+    : await parseBchOrUsdAmount(amountRaw);
 
   if (!theirAmount) {
     await reply(
