@@ -15,7 +15,7 @@ module.exports = async ({
 }) => {
   if (params.length !== 1) {
     await reply(
-      `I don't understand this command. I expected "/reverse <identifier>"`
+      `I don't understand this command. I expected "/undo <identifier>"`
     );
     return;
   }

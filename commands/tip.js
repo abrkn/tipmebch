@@ -113,7 +113,7 @@ module.exports = async ({
 
   if (!userIsKnown) {
     await reply(
-      `@${toUsername} needs to claim the tip by saying /claim. @${username} can reverse the tip with "/reverse ${unclaimedId}" until then`
+      `@${toUsername} needs to claim the tip by saying /claim. @${username} can reverse the tip with "/undo ${unclaimedId}" until then`
     );
   }
 

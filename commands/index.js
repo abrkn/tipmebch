@@ -8,5 +8,8 @@ exports.about = require('./about');
 exports.stats = require('./stats');
 exports.start = require('./start');
 exports.setstickerset = require('./setStickerSet');
-exports.reverse = require('./reverse');
+exports.undo = require('./undo');
 exports.claim = require('./claim');
+
+// TODO: Remove by 2018-05-01
+exports.reverse = exports.undo;
