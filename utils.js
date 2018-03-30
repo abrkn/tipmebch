@@ -13,8 +13,13 @@ exports.formatNumber = (value, format) => numeral(value).format(format);
 const printError = (...args) => console.error(...args);
 exports.printError = printError;
 
-exports.formatBch = _ =>
-  `${numeral(_.toString()).format('0,0[.00000000]')} BCH`;
+exports.formatBch = _ => {
+  if (+_ < 1) {
+    return _.toString();
+  }
+
+  return `${numeral(_.toString()).format('0,0[.00000000]')} BCH`;
+};
 
 exports.formatUsd = _ => {
   if (+_ < 0.01) {
