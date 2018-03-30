@@ -50,8 +50,7 @@ const bchToUsd = async amount => {
 
 const usdToBch = async amount => {
   const usdRate = (await memFetchCoinmarketcap('bitcoin-cash')).price_usd;
-
-  return Math.round(parseFloat(n(amount).div(usdRate)), 8);
+  return +parseFloat(n(amount).div(usdRate)).toFixed(8);
 };
 
 const formatBchWithUsd = async amount => {
