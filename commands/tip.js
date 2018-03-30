@@ -1,10 +1,9 @@
-const { n } = require('../utils');
 const shortid = require('shortid');
 const {
-  fetchCoinmarketcap,
   formatBchWithUsd,
   transfer,
   bchToUsd,
+  parseBchOrUsdAmount,
 } = require('../apis');
 const { BalanceWouldBecomeNegativeError } = require('../errors');
 const debug = require('debug')('tipmebch');
@@ -45,28 +44,14 @@ module.exports = async ({
   const toUserId = await redisClient.getAsync(`telegram.user.${toUsername}`);
   const userIsKnown = !!toUserId;
 
-  const amountMatch = amountRaw.match(/^(\$?)([0-9\.]+)$/);
+  const bchAmount = await parseBchOrUsdAmount(amountRaw);
 
-  if (!amountMatch) {
+  if (!bchAmount) {
     await reply(
       `I don't understand the amount. I expected "/tipbch 0.01 @username" or "/tipbch $1 @username"`
     );
     await ctx.maybeReplyFromStickerSet('confused');
     return;
-  }
-
-  const [, theirSymbol, theirAmount] = amountMatch;
-
-  let bchAmount;
-
-  const usdRate = (await fetchCoinmarketcap('bitcoin-cash')).price_usd;
-
-  if (theirSymbol === '$') {
-    bchAmount = n(theirAmount)
-      .div(usdRate)
-      .toFixed(8);
-  } else {
-    bchAmount = theirAmount;
   }
 
   debug('User is known? %s', userIsKnown);
