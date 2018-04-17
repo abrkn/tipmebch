@@ -34,5 +34,7 @@ module.exports = async ({ ctx, fetchRpc, userId, isPm, reply }) => {
     },
   ]);
 
-  await ctx.reply(`To deposit Bitcoin (BCH), send to: ${address}`);
+  await ctx.reply(`To deposit Bitcoin (BCH), send to:`);
+
+  await ctx.reply(address);
 };
