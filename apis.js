@@ -1,28 +1,17 @@
 const shortid = require('shortid');
-const {
-  isValidTelegramUserIdFormat,
-  getUserAccount,
-  bchAddressToInternal,
-} = require('./utils');
+const { isValidTelegramUserIdFormat, getUserAccount } = require('./utils');
 
 const { BalanceWouldBecomeNegativeError } = require('./errors');
 
 const assert = require('assert');
 const superagent = require('superagent');
 const pMemoize = require('p-memoize');
-const {
-  n,
-  formatBch,
-  formatUsd,
-  hasTooManyDecimalsForSats,
-} = require('./utils');
+const { n, formatBch, formatUsd, hasTooManyDecimalsForSats } = require('./utils');
 
 const MIN_WITHDRAW_AMOUNT = 0.0001;
 
 const fetchCoinmarketcap = async coin => {
-  const { body } = await superagent(
-    'https://api.coinmarketcap.com/v1/ticker/?limit=10'
-  );
+  const { body } = await superagent('https://api.coinmarketcap.com/v1/ticker/?limit=10');
   const [item] = body.filter(_ => _.id === coin);
   assert(item, `${coin} not found`);
   return item;
@@ -59,10 +48,7 @@ const formatBchWithUsd = async amount => {
   return `${formatBch(amount)} (${formatUsd(amountAsUsd)})`;
 };
 
-exports.formatConfirmedAndUnconfirmedBalances = async (
-  confirmed,
-  withUnconfirmed
-) => {
+exports.formatConfirmedAndUnconfirmedBalances = async (confirmed, withUnconfirmed) => {
   const pending = n(withUnconfirmed)
     .minus(confirmed)
     .toNumber();
@@ -106,27 +92,16 @@ exports.parseBchOrUsdAmount = async value => {
 };
 
 const getBalanceForAccount = async (accountId, { fetchRpc, minConf } = {}) => {
-  return await fetchRpc('getbalance', [
-    accountId,
-    ...(minConf !== undefined ? [minConf] : []),
-  ]);
+  return await fetchRpc('getbalance', [accountId, ...(minConf !== undefined ? [minConf] : [])]);
 };
 
 const getBalanceForUser = (userId, { minConf, fetchRpc } = {}) => {
-  assert(
-    isValidTelegramUserIdFormat(userId),
-    `Invalid user id format, ${userId}`
-  );
+  assert(isValidTelegramUserIdFormat(userId), `Invalid user id format, ${userId}`);
 
   return getBalanceForAccount(getUserAccount(userId), { minConf, fetchRpc });
 };
 
-const transfer = async (
-  fromUserId,
-  toUserId,
-  amount,
-  { fetchRpc, lockBitcoind, redisClient }
-) => {
+const transfer = async (fromUserId, toUserId, amount, { fetchRpc, lockBitcoind, redisClient }) => {
   assert.equal(typeof toUserId, 'string');
   assert.equal(typeof fromUserId, 'string');
   assert.notEqual(fromUserId, toUserId, 'Cannot send to self');
@@ -140,16 +115,12 @@ const transfer = async (
     assert(amountN.isFinite(), 'Not finite');
     assert(amountN.gt(0), 'Less than or equal to zero');
 
-    const prevBalance = n(
-      await fetchRpc('getbalance', [getUserAccount(fromUserId)])
-    );
+    const prevBalance = n(await fetchRpc('getbalance', [getUserAccount(fromUserId)]));
 
     const nextBalance = prevBalance.minus(amountN);
 
     if (nextBalance.lt(0)) {
-      throw new BalanceWouldBecomeNegativeError(
-        'Balance would become negative'
-      );
+      throw new BalanceWouldBecomeNegativeError('Balance would become negative');
     }
 
     const moved = await fetchRpc('move', [
@@ -183,12 +154,7 @@ const transfer = async (
   }
 };
 
-const withdraw = async (
-  fromUserId,
-  address,
-  amount,
-  { fetchRpc, lockBitcoind }
-) => {
+const withdraw = async (fromUserId, address, amount, { fetchRpc, lockBitcoind }) => {
   assert(isValidTelegramUserIdFormat(fromUserId));
   assert.equal(typeof address, 'string');
 
@@ -200,25 +166,18 @@ const withdraw = async (
     assert(!hasTooManyDecimalsForSats(amountN), 'Too many decimals');
     assert(amountN.isFinite(), 'Not finite');
     assert(amountN.gt(0), 'Less than or equal to zero');
-    assert(
-      amountN.gte(MIN_WITHDRAW_AMOUNT),
-      `Amount less than minimum  of ${MIN_WITHDRAW_AMOUNT}`
-    );
+    assert(amountN.gte(MIN_WITHDRAW_AMOUNT), `Amount less than minimum  of ${MIN_WITHDRAW_AMOUNT}`);
 
-    const prevBalance = n(
-      await fetchRpc('getbalance', [getUserAccount(fromUserId)])
-    );
+    const prevBalance = n(await fetchRpc('getbalance', [getUserAccount(fromUserId)]));
     const nextBalance = prevBalance.minus(amountN);
 
     if (nextBalance.lt(0)) {
-      throw new BalanceWouldBecomeNegativeError(
-        'Balance would become negative'
-      );
+      throw new BalanceWouldBecomeNegativeError('Balance would become negative');
     }
 
     const txid = await fetchRpc('sendfrom', [
       getUserAccount(fromUserId),
-      bchAddressToInternal(address),
+      address,
       amountN.toFixed(8),
     ]);
     assert(txid, 'Could not withdraw funds');

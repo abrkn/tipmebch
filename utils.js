@@ -34,8 +34,7 @@ exports.swallowError = e => {
   return 'Error';
 };
 
-exports.randomIntFromInterval = (min, max) =>
-  Math.floor(Math.random() * (max - min + 1) + min);
+exports.randomIntFromInterval = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
 
 exports.createQrCode = text =>
   new Promise((resolve, reject) => {
@@ -59,33 +58,9 @@ exports.extractUserDiscordIdFromTag = _ => {
   return match[1];
 };
 
-const BITCOIN_BASE58_ADDRESS_REGEX = /^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$/;
-
-exports.internalBchAddressToStandard = (address, withPrefix = false) => {
-  assert(address.match(BITCOIN_BASE58_ADDRESS_REGEX));
-
-  const bchAddress = new bch.Address(address);
-  return bchAddress.toString(bch.Address.CashAddrFormat);
-};
-
-exports.bchAddressToInternal = address => {
-  if (address.match(BITCOIN_BASE58_ADDRESS_REGEX)) {
-    return address;
-  }
-
-  const bchAddress = bch.Address.fromString(
-    address,
-    'livenet',
-    'pubkeyhash',
-    bch.Address.CashAddrFormat
-  );
-  return bchAddress.toString(bch.Address.LegacyFormat);
-};
-
 const getUserAccount = id => `telegram-${id}`;
 
-const hasTooManyDecimalsForSats = (value, decimals) =>
-  !n(n(value).toFixed(8)).eq(n(value));
+const hasTooManyDecimalsForSats = (value, decimals) => !n(n(value).toFixed(8)).eq(n(value));
 
 exports.getAddressForUser = async (userId, { fetchRpc }) => {
   console.log('wat', userId, typeof userId);
