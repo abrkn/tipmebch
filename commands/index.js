@@ -1,7 +1,11 @@
-exports.tipbch = require('./tip');
+const disabled = require('./disabled');
+
+// exports.tipbch = require('./tip');
+exports.tipbch = disabled;
 exports.balance = require('./balance');
 exports.balancereport = require('./balanceReport');
-exports.deposit = require('./deposit');
+// exports.deposit = require('./deposit');
+exports.deposit = disabled;
 exports.withdraw = require('./withdraw');
 exports.help = require('./help');
 exports.about = require('./about');
